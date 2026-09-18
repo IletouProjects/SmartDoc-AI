@@ -31,6 +31,16 @@ Conversion / extraction du texte
 
 Le fichier reçu par le webhook doit être mappé dans le champ fichier du module Google Drive. Les étapes d’extraction, Iterator, Text aggregator, Make AI Toolkit et Airtable peuvent rester après cette étape.
 
+### Important — éviter `document.pdf.pdf`
+
+Dans **Google Drive → Upload a File**, le champ **New File Name** ne doit pas recevoir un nom qui contient déjà `.pdf` si le module ajoute lui-même l’extension.
+
+- soit laisser **New File Name** vide pour conserver le nom du fichier reçu ;
+- soit fournir un nom sans extension ;
+- ne pas mapper directement `filename` dans ce champ lorsque `filename` vaut déjà `document.pdf`.
+
+Les anciens fichiers enregistrés avec `.pdf.pdf` restent compatibles avec l’interface, mais les nouveaux dépôts doivent être enregistrés avec une seule extension.
+
 Pour tester, activer `Run once` dans Make puis déposer un PDF dans le portail. En production, le webhook déclenche Make au moment de la réception, sans attendre le cycle de 15 minutes.
 
 ## 2. Parcours du fichier

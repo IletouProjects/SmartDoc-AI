@@ -59,9 +59,10 @@ function parseMultipart(request) {
 }
 
 function cleanFilename(filename) {
-  const cleaned = String(filename || 'document.pdf')
+  let cleaned = String(filename || 'document.pdf')
     .replace(/[\\/\0]/g, '')
     .trim();
+  cleaned = cleaned.replace(/(?:\.pdf)+$/i, '.pdf');
   return cleaned.toLowerCase().endsWith('.pdf') ? cleaned : `${cleaned}.pdf`;
 }
 

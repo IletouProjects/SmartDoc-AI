@@ -1,10 +1,23 @@
 const DEFAULT_DOCUMENTS_TABLE = 'Documents';
 const DEFAULT_ANALYSES_TABLE = 'Analyses IA';
 
+function normalizeFieldName(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
+}
+
 function getField(fields, names) {
+  const source = fields || {};
   for (const name of names) {
-    if (Object.prototype.hasOwnProperty.call(fields, name)) return fields[name];
+    if (Object.prototype.hasOwnProperty.call(source, name)) return source[name];
   }
+
+  const normalizedNames = names.map(normalizeFieldName);
+  const matchingKey = Object.keys(source).find((key) => normalizedNames.includes(normalizeFieldName(key)));
+  if (matchingKey) return source[matchingKey];
   return null;
 }
 
@@ -75,17 +88,24 @@ async function airtableList(table, params = {}) {
 }
 
 function linkedRecordIds(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value.id ? [String(value.id)] : [];
+  }
   if (!Array.isArray(value)) return value ? [String(value)] : [];
   return value.map((item) => (typeof item === 'string' ? item : item.id)).filter(Boolean);
 }
 
 function normalizedFilename(value) {
-  return String(value || '')
+  const normalized = String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase();
+  // Le module Google Drive peut ajouter l'extension alors que Make la reçoit
+  // déjà dans le nom. « document.pdf.pdf » doit donc correspondre à
+  // « document.pdf » pour le suivi du même dépôt.
+  return normalized.replace(/(?:\.pdf)+$/, '.pdf');
 }
 
 module.exports = async function handler(request, response) {
@@ -185,10 +205,18 @@ module.exports = async function handler(request, response) {
       documentStatus: currentStatus,
       version: getField(documentFields, ['Version actuelle']) || getField(analysisFields, ['Version analysée', 'Version analysee']) || 1,
       analysis: {
-        category: getField(analysisFields, ['Catégorie détectée', 'Categorie detectee', 'categorie']),
+        category: getField(analysisFields, ['Catégorie détectée', 'Categorie detectee', 'Categorie Detectee', 'categorie']),
         summary: getField(analysisFields, ['Résumé IA', 'Resume IA', 'resume']),
         keyPoints: getField(analysisFields, ['Points importants', 'points_importants']),
-        verification: getField(analysisFields, ['Vérification humaine', 'Verification humaine', 'Vérification', 'verification']),
+        verification: getField(analysisFields, [
+          'Vérification humaine',
+          'Verification humaine',
+          'Vérification',
+          'verification',
+          'Points de vigilance IA',
+          'Points vigilance IA',
+          'Verification IA',
+        ]),
         confidence: getField(analysisFields, ['Score confiance IA', 'score_confiance']),
       },
     });
