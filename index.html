@@ -341,10 +341,7 @@
       };
 
       const pollStatus = async (filename, startedAt) => {
-        // Le scénario de surveillance Google Drive peut être planifié toutes
-        // les 15 minutes. La page doit donc rester disponible assez longtemps
-        // pour couvrir un cycle complet, sans multiplier les requêtes inutiles.
-        for (let attempt = 0; attempt < 150; attempt += 1) {
+        for (let attempt = 0; attempt < 75; attempt += 1) {
           const query = new URLSearchParams({ filename, since: startedAt });
           const response = await fetch(`/api/status?${query.toString()}`, { cache: 'no-store' });
           const payload = await response.json().catch(() => ({}));
@@ -358,9 +355,9 @@
           }
           if (payload.status === 'error') throw new Error(payload.message || 'Le scénario Make a rencontré une erreur.');
           showStatus(payload.message || 'Fichier reçu. Make traite actuellement le document.');
-          await wait(attempt < 12 ? 4000 : 8000);
+          await wait(4000);
         }
-        throw new Error('Le traitement continue dans Make. Consultez Airtable ou rechargez cette page dans quelques instants.');
+        throw new Error('Le traitement prend plus de temps que prévu. Consultez Airtable pour vérifier son état.');
       };
 
       form.addEventListener('submit', async (event) => {
