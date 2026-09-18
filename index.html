@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SmartDoc AI transforme les documents déposés en analyses structurées et traçables.">
+  <meta name="theme-color" content="#f7f7f3">
+  <title>SmartDoc AI — Documents qui deviennent décisions</title>
+  <style>
+    :root {
+      --paper: #f7f7f3;
+      --white: #ffffff;
+      --ink: #141515;
+      --muted: #6b6e6d;
+      --line: #dedfdb;
+      --coral: #ef5c50;
+      --coral-dark: #c73f36;
+      --lavender: #d9ceff;
+      --mint: #bbf0ce;
+      --navy: #1d2938;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: Arial, Helvetica, sans-serif; line-height: 1.45; }
+    body::selection { background: var(--coral); color: var(--white); }
+    a { color: inherit; }
+    .app { min-height: 100vh; overflow: hidden; }
+    .topbar { position: sticky; top: 0; z-index: 20; background: rgba(247,247,243,.93); border-bottom: 1px solid var(--line); backdrop-filter: blur(14px); }
+    .topbar-inner, .container { width: min(1240px, calc(100% - 64px)); margin: 0 auto; }
+    .topbar-inner { min-height: 82px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; }
+    .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; width: fit-content; }
+    .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--ink); border-radius: 50%; font: 700 13px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .brand-copy { display: grid; gap: 2px; }
+    .brand-name { font-size: 15px; letter-spacing: .04em; font-weight: 700; }
+    .brand-sub { color: var(--muted); font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    nav { display: flex; align-items: center; gap: 24px; }
+    nav a { color: var(--muted); text-decoration: none; font-size: 13px; }
+    nav a:hover, nav a:focus-visible { color: var(--ink); outline: none; }
+    .topbar-cta { justify-self: end; }
+    .button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 10px; padding: 0 17px; border: 1px solid transparent; border-radius: 0; text-decoration: none; font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .04em; text-transform: uppercase; transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease; }
+    .button:hover { transform: translateY(-2px); }
+    .button.primary { color: var(--ink); background: var(--coral); }
+    .button.primary:hover { background: #f26c61; }
+    .button.secondary { color: var(--ink); border-color: var(--ink); background: transparent; }
+    .button.secondary:hover { color: var(--white); background: var(--ink); }
+    main { padding: 28px 0 72px; }
+    .hero { position: relative; min-height: 620px; display: grid; grid-template-columns: minmax(0,1.03fr) minmax(0,.97fr); align-items: stretch; overflow: hidden; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); background-color: var(--white); background-image: repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgba(20,21,21,.075) calc(12.5% - 1px), rgba(20,21,21,.075) 12.5%); }
+    .hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-left: 1px solid rgba(20,21,21,.08); border-right: 1px solid rgba(20,21,21,.08); }
+    .hero-copy { position: relative; z-index: 2; align-self: center; padding: 74px 30px 74px 52px; }
+    .eyebrow, .micro-label { display: inline-flex; align-items: center; color: var(--ink); font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    .eyebrow::before, .eyebrow::after { color: var(--coral); font-weight: 400; }
+    .eyebrow::before { content: "["; margin-right: 6px; }
+    .eyebrow::after { content: "]"; margin-left: 6px; }
+    h1 { max-width: 730px; margin: 28px 0 22px; color: var(--ink); font-size: clamp(54px,7.5vw,96px); font-weight: 500; letter-spacing: -.075em; line-height: .96; }
+    h1 span { display: block; }
+    h1 .accent { color: var(--coral); }
+    .hero-description { max-width: 520px; color: #3c4140; font-size: 16px; }
+    .hero-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+    .hero-note { max-width: 430px; margin-top: 42px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    .hero-art { position: absolute; z-index: 1; top: 0; right: -1%; width: 68%; height: 100%; object-fit: cover; object-position: 70% center; mix-blend-mode: multiply; opacity: .78; pointer-events: none; }
+    .hero-panel { position: relative; z-index: 3; align-self: end; justify-self: end; width: min(310px,78%); margin: 0 44px 44px 0; padding: 22px; border: 1px solid var(--ink); background: rgba(255,255,255,.94); box-shadow: 9px 9px 0 var(--lavender); }
+    .panel-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .panel-status { display: inline-flex; align-items: center; gap: 7px; font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4aaf6d; }
+    .panel-code { color: var(--muted); font: 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .panel-title { margin: 20px 0 6px; font-size: 24px; font-weight: 500; letter-spacing: -.04em; }
+    .panel-copy { color: var(--muted); font-size: 13px; }
+    .panel-route { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--ink); font: 11px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: center; }
+    .panel-route b { color: var(--coral); font-weight: 400; }
+    .hero-strip { display: grid; grid-template-columns: repeat(3,1fr); border-bottom: 1px solid var(--ink); background: var(--white); }
+    .strip-item { padding: 18px 22px; border-right: 1px solid var(--line); }
+    .strip-item:last-child { border-right: 0; }
+    .strip-item strong { display: block; margin-bottom: 4px; font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
+    .strip-item span { color: var(--muted); font-size: 13px; }
+    .section { margin-top: 76px; }
+    .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin-bottom: 22px; }
+    .section-heading h2 { margin: 13px 0 0; font-size: clamp(32px,4vw,54px); font-weight: 500; letter-spacing: -.065em; line-height: 1; }
+    .section-heading > p { max-width: 280px; color: var(--muted); font-size: 14px; text-align: right; }
+    .process { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+    .process-step { min-height: 205px; padding: 20px 20px 24px; border-right: 1px solid var(--line); }
+    .process-step:last-child { border-right: 0; }
+    .step-number { color: var(--coral); font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .process-step h3 { margin: 52px 0 10px; font-size: 21px; font-weight: 500; letter-spacing: -.04em; }
+    .process-step p { max-width: 190px; color: var(--muted); font-size: 13px; }
+    .split { display: grid; grid-template-columns: 1.28fr .72fr; gap: 24px; align-items: start; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--ink); background: var(--white); }
+    table { width: 100%; min-width: 650px; border-collapse: collapse; }
+    th, td { padding: 17px 18px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13px; }
+    th { color: var(--muted); background: #f1f1ed; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .07em; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    .doc-name { font-weight: 700; }
+    .tag { display: inline-flex; padding: 5px 8px; font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .04em; text-transform: uppercase; }
+    .tag.coral { color: #8f2d27; background: #ffe2de; }
+    .tag.mint { color: #25633a; background: var(--mint); }
+    .tag.gray { color: var(--muted); background: #eceeea; }
+    .quick-card { padding: 26px; border: 1px solid var(--ink); background: var(--navy); color: var(--white); }
+    .quick-card .eyebrow { color: var(--white); }
+    .quick-card h2 { margin: 18px 0 10px; font-size: 30px; font-weight: 500; letter-spacing: -.06em; line-height: 1; }
+    .quick-card > p { color: #c4cbd2; font-size: 13px; }
+    .side-list { display: grid; gap: 8px; margin-top: 24px; }
+    .side-item { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.17); text-decoration: none; }
+    .side-item:last-child { border-bottom: 1px solid rgba(255,255,255,.17); }
+    .side-item:hover strong { color: var(--coral); }
+    .side-item strong { display: block; color: var(--white); font-size: 13px; font-weight: 700; }
+    .side-item span span { display: block; margin-top: 3px; color: #aeb9c2; font-size: 12px; }
+    .icon { width: 22px; height: 22px; display: grid; flex: 0 0 22px; place-items: center; color: var(--ink); background: var(--coral); font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .test-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 32px; border: 1px solid var(--ink); background: var(--white); }
+    .test-panel h3 { margin: 16px 0 10px; font-size: 27px; font-weight: 500; letter-spacing: -.055em; }
+    .test-panel p { color: var(--muted); font-size: 14px; }
+    .checklist { display: grid; gap: 0; border-top: 1px solid var(--line); }
+    .check-item { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .check-item b { color: var(--coral); font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .check-item strong { display: block; margin-bottom: 2px; font-size: 13px; }
+    .check-item span { color: var(--muted); font-size: 12px; }
+    .upload-card { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 22px; padding: 24px; border: 1px solid var(--ink); background: var(--white); }
+    .dropzone { min-height: 180px; display: grid; place-items: center; align-content: center; gap: 10px; padding: 28px; border: 1px dashed var(--ink); background: #fbfbf8; text-align: center; cursor: pointer; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+    .dropzone:hover, .dropzone.dragover { border-color: var(--coral); background: #fff0ed; transform: translateY(-2px); }
+    .dropzone input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    .dropzone-icon { width: 40px; height: 40px; display: grid; place-items: center; color: var(--white); background: var(--coral); font: 700 17px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .dropzone-title { font-size: 18px; font-weight: 500; letter-spacing: -.03em; }
+    .dropzone-copy { color: var(--muted); font-size: 13px; }
+    .upload-side { display: flex; min-width: 215px; flex-direction: column; justify-content: space-between; gap: 18px; }
+    .file-name { min-height: 42px; padding: 12px; border: 1px solid var(--line); color: var(--muted); font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .upload-side .button { width: 100%; }
+    .status-message { margin-top: 14px; padding: 14px 16px; border-left: 3px solid var(--coral); color: var(--ink); background: #fff0ed; font-size: 13px; }
+    .status-message[hidden], .result-card[hidden] { display: none; }
+    .status-message.success { border-left-color: #4aaf6d; background: #effaf2; }
+    .status-message.error { border-left-color: var(--coral-dark); background: #fff0ed; }
+    .result-card { margin-top: 18px; padding: 26px; border: 1px solid var(--ink); background: var(--navy); color: var(--white); }
+    .result-card h3 { margin: 12px 0 4px; font-size: 27px; font-weight: 500; letter-spacing: -.055em; }
+    .result-card > p { margin: 0; color: #c4cbd2; font-size: 13px; }
+    .result-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; margin-top: 24px; border: 1px solid rgba(255,255,255,.17); background: rgba(255,255,255,.17); }
+    .result-item { min-height: 90px; padding: 15px; background: var(--navy); }
+    .result-item.wide { grid-column: 1 / -1; }
+    .result-label { display: block; margin-bottom: 7px; color: #aeb9c2; font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .07em; text-transform: uppercase; }
+    .result-value { color: var(--white); font-size: 14px; white-space: pre-wrap; }
+    .result-value.score { color: var(--mint); font: 700 24px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 72px; padding-top: 18px; border-top: 1px solid var(--ink); color: var(--muted); font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
+    .footer strong { color: var(--ink); }
+    @media (max-width: 940px) {
+      .topbar-inner, .container { width: min(100% - 40px, 1240px); }
+      .hero { grid-template-columns: 1fr; min-height: 710px; }
+      .hero-art { width: 100%; height: 55%; top: auto; bottom: 0; opacity: .65; object-position: 75% center; }
+      .hero-copy { padding: 60px 36px 30px; }
+      .hero-panel { margin: 0 30px 30px auto; }
+      .split, .test-panel { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .topbar-inner { grid-template-columns: 1fr auto; min-height: 70px; }
+      nav { display: none; }
+      .topbar-cta { justify-self: end; }
+      .topbar-cta .button { min-height: 38px; padding: 0 11px; font-size: 10px; }
+      main { padding-top: 16px; }
+      h1 { font-size: clamp(50px,15vw,78px); }
+      .hero { min-height: 690px; }
+      .hero-copy { padding: 50px 24px 20px; }
+      .hero-actions { align-items: stretch; flex-direction: column; }
+      .hero-actions .button { width: 100%; }
+      .hero-note { margin-top: 28px; }
+      .hero-panel { width: calc(100% - 48px); margin: 0 24px 24px; }
+      .hero-strip { grid-template-columns: 1fr; }
+      .strip-item { border-right: 0; border-bottom: 1px solid var(--line); }
+      .strip-item:last-child { border-bottom: 0; }
+      .upload-card { grid-template-columns: 1fr; padding: 16px; }
+      .upload-side { min-width: 0; }
+      .result-grid { grid-template-columns: 1fr; }
+      .result-item.wide { grid-column: auto; }
+      .section { margin-top: 56px; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+      .section-heading > p { text-align: left; }
+      .process { grid-template-columns: 1fr 1fr; }
+      .process-step { min-height: 170px; }
+      .process-step h3 { margin-top: 30px; }
+      .test-panel { padding: 24px; }
+      .footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .button { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#accueil" aria-label="SmartDoc AI accueil"><span class="brand-mark">S</span><span class="brand-copy"><span class="brand-name">SmartDoc AI</span><span class="brand-sub">Document intelligence</span></span></a>
+        <nav aria-label="Navigation principale"><a href="#flux">Flux</a><a href="#documents">Documents</a><a href="#depot">Déposer</a></nav>
+        <div class="topbar-cta"><a class="button primary" href="#depot">Déposer un PDF ↗</a></div>
+      </div>
+    </header>
+
+    <main id="accueil">
+      <div class="container">
+        <section class="hero" aria-labelledby="hero-title">
+          <img class="hero-art" src="assets/smartdoc-waveform.png" alt="" aria-hidden="true">
+          <div class="hero-copy">
+            <span class="eyebrow">Workflow documentaire · IA</span>
+            <h1 id="hero-title"><span>Déposer.</span><span>Analyser.</span><span class="accent">Décider.</span></h1>
+            <p class="hero-description">SmartDoc AI transforme un PDF en information structurée : catégorie, résumé, points importants et score de confiance, avec un historique de versions vérifiable.</p>
+            <div class="hero-actions"><a class="button primary" href="#depot">Déposer un PDF ↗</a><a class="button secondary" href="https://airtable.com/appeKMMHs9aXnLeTe" target="_blank" rel="noopener">Voir les résultats</a></div>
+            <p class="hero-note">Choisissez un PDF non confidentiel. Le traitement démarre automatiquement et le résultat s’affiche ici.</p>
+          </div>
+          <aside class="hero-panel" aria-live="polite" aria-label="État du workflow"><div class="panel-top"><span class="panel-status"><span class="status-dot" id="flow-status-dot"></span><span id="flow-status">Prêt à recevoir</span></span><span class="panel-code">01 / 04</span></div><h2 class="panel-title" id="panel-title">Déposez un fichier.</h2><p class="panel-copy" id="panel-copy">Le traitement démarre automatiquement dès que le PDF est envoyé.</p><div class="panel-route"><span>Plateforme</span><b>→</b><span>Make + IA</span></div></aside>
+        </section>
+
+        <section class="hero-strip" aria-label="État de la solution"><div class="strip-item"><strong>Traitement</strong><span>Google Drive → IA → Airtable</span></div><div class="strip-item"><strong>Versioning</strong><span>Une fiche, plusieurs versions</span></div><div class="strip-item"><strong>Cadence</strong><span>Scénario Make actif · 15 min</span></div></section>
+
+        <section class="section" id="depot"><div class="section-heading"><div><span class="eyebrow">01 · Dépôt direct</span><h2>Lancer une analyse</h2></div><p>Le PDF est transmis à Make, traité, puis le résultat final revient dans cette page.</p></div><form class="upload-card" id="upload-form"><label class="dropzone" id="dropzone" for="file-input"><span class="dropzone-icon">↑</span><span class="dropzone-title">Déposez votre PDF ici</span><span class="dropzone-copy">ou cliquez pour sélectionner un fichier · 8 Mo maximum</span><input id="file-input" name="file" type="file" accept="application/pdf,.pdf" required></label><div class="upload-side"><div><span class="eyebrow">Fichier sélectionné</span><div class="file-name" id="file-name">Aucun fichier sélectionné</div></div><button class="button primary" id="submit-button" type="submit">Lancer l’analyse ↗</button></div></form><div class="status-message" id="status-message" role="status" aria-live="polite" hidden></div><section class="result-card" id="result-card" aria-live="polite" hidden><span class="eyebrow">Analyse terminée</span><h3 id="result-title">Résultat disponible</h3><p id="result-meta"></p><div class="result-grid"><div class="result-item"><span class="result-label">Catégorie</span><div class="result-value" id="result-category">—</div></div><div class="result-item"><span class="result-label">Score de confiance</span><div class="result-value score" id="result-score">—</div></div><div class="result-item wide"><span class="result-label">Résumé</span><div class="result-value" id="result-summary">—</div></div><div class="result-item wide"><span class="result-label">Points importants</span><div class="result-value" id="result-points">—</div></div><div class="result-item wide"><span class="result-label">Vérification</span><div class="result-value" id="result-verification">—</div></div></div></section></section>
+
+        <section class="section" id="flux"><div class="section-heading"><div><span class="eyebrow">01 · Le parcours</span><h2>Du fichier à la décision</h2></div><p>Une chaîne courte, lisible et vérifiable de bout en bout.</p></div><div class="process"><article class="process-step"><div class="step-number">01</div><h3>Dépôt</h3><p>Le PDF arrive dans le dossier Google Drive.</p></article><article class="process-step"><div class="step-number">02</div><h3>Extraction</h3><p>Le contenu est converti et recomposé en texte.</p></article><article class="process-step"><div class="step-number">03</div><h3>Analyse IA</h3><p>Catégorie, résumé, points clés et score sont produits.</p></article><article class="process-step"><div class="step-number">04</div><h3>Traçabilité</h3><p>Document, version et analyse sont liés dans Airtable.</p></article></div></section>
+
+        <section class="section split" id="documents"><div><div class="section-heading"><div><span class="eyebrow">02 · Suivi documentaire</span><h2>Derniers documents traités</h2></div></div><div class="table-wrap"><table><thead><tr><th>Document</th><th>Catégorie</th><th>Version</th><th>État</th></tr></thead><tbody><tr><td class="doc-name">Contrat_Test_Client.pdf</td><td><span class="tag coral">Contrat</span></td><td>2</td><td><span class="tag mint">Analysé</span></td></tr><tr><td class="doc-name">LPT_Challenge_Projet_IA.pdf</td><td><span class="tag gray">Rapport</span></td><td>1</td><td><span class="tag mint">Analysé</span></td></tr></tbody></table></div></div><aside class="quick-card"><span class="eyebrow">Accès rapide</span><h2>Les résultats, au même endroit.</h2><p>Ouvrez la base pour suivre le document, ses versions et l’analyse générée.</p><div class="side-list"><a class="side-item" href="https://airtable.com/appeKMMHs9aXnLeTe" target="_blank" rel="noopener"><span class="icon">D</span><span><strong>Documents</strong><span>Référentiel et statut actuel</span></span></a><a class="side-item" href="https://airtable.com/appeKMMHs9aXnLeTe" target="_blank" rel="noopener"><span class="icon">V</span><span><strong>Versions</strong><span>Historique des fichiers</span></span></a><a class="side-item" href="https://airtable.com/appeKMMHs9aXnLeTe" target="_blank" rel="noopener"><span class="icon">IA</span><span><strong>Analyses IA</strong><span>Résumé et score de confiance</span></span></a></div></aside></section>
+
+        <section class="section" id="test"><div class="section-heading"><div><span class="eyebrow">03 · Parcours</span><h2>Du fichier au résultat</h2></div><p>Le suivi reste visible à chaque étape.</p></div><div class="test-panel"><div><span class="micro-label">Traitement automatique</span><h3>Un document. Une analyse. Une décision.</h3><p>Le PDF est reçu par la plateforme, envoyé au scénario Make, analysé par l’IA puis enregistré dans Airtable avec son historique de versions.</p><div class="hero-actions"><a class="button primary" href="#depot">Déposer un document ↗</a></div></div><div class="checklist"><div class="check-item"><b>01</b><span><strong>Déposer</strong><span>Sélectionner un PDF non confidentiel depuis la plateforme.</span></span></div><div class="check-item"><b>02</b><span><strong>Analyser</strong><span>Make orchestre l’extraction, l’IA et le versionnement.</span></span></div><div class="check-item"><b>03</b><span><strong>Consulter</strong><span>Le résumé et le score s’affichent ici puis sont conservés dans Airtable.</span></span></div></div></div></section>
+
+        <footer class="footer"><span><strong>SmartDoc AI</strong> · Prototype fonctionnel</span><span>Portail documentaire · Données affichées à titre indicatif</span></footer>
+      </div>
+    </main>
+  </div>
+  <script>
+    (() => {
+      const form = document.getElementById('upload-form');
+      const input = document.getElementById('file-input');
+      const dropzone = document.getElementById('dropzone');
+      const fileName = document.getElementById('file-name');
+      const submitButton = document.getElementById('submit-button');
+      const statusMessage = document.getElementById('status-message');
+      const resultCard = document.getElementById('result-card');
+      const flowStatus = document.getElementById('flow-status');
+      const flowStatusDot = document.getElementById('flow-status-dot');
+      const panelTitle = document.getElementById('panel-title');
+      const panelCopy = document.getElementById('panel-copy');
+      const maxFileSize = 8 * 1024 * 1024;
+      let selectedFile = null;
+
+      const escapeHtml = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+      const formatValue = (value) => {
+        if (Array.isArray(value)) return value.map(formatValue).join(' · ');
+        if (value && typeof value === 'object') return JSON.stringify(value);
+        return value === undefined || value === null || value === '' ? 'Non renseigné' : String(value);
+      };
+
+      const setFlowState = (state) => {
+        const colors = { ready: '#4aaf6d', processing: '#e9a23b', done: '#4aaf6d', error: '#c73f36' };
+        const labels = { ready: 'Prêt à recevoir', processing: 'Traitement en cours', done: 'Analyse terminée', error: 'Erreur à vérifier' };
+        const titles = { ready: 'Déposez un fichier.', processing: 'Analyse en cours.', done: 'Résultat disponible.', error: 'Traitement interrompu.' };
+        const copies = { ready: 'Le traitement démarre automatiquement dès que le PDF est envoyé.', processing: 'Make extrait le contenu et l’analyse avec l’IA.', done: 'Le document est versionné et son analyse est disponible.', error: 'Vérifiez la configuration Make ou réessayez avec un autre PDF.' };
+        flowStatus.textContent = labels[state] || labels.ready;
+        flowStatusDot.style.background = colors[state] || colors.ready;
+        panelTitle.textContent = titles[state] || titles.ready;
+        panelCopy.textContent = copies[state] || copies.ready;
+      };
+
+      const showStatus = (message, type = '') => {
+        statusMessage.hidden = !message;
+        statusMessage.className = `status-message ${type}`.trim();
+        statusMessage.textContent = message || '';
+      };
+
+      const selectFile = (file) => {
+        if (!file) return;
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+        if (!isPdf) {
+          selectedFile = null;
+          input.value = '';
+          fileName.textContent = 'Format refusé : sélectionnez un PDF.';
+          showStatus('Le fichier doit être au format PDF.', 'error');
+          return;
+        }
+        if (file.size > maxFileSize) {
+          selectedFile = null;
+          input.value = '';
+          fileName.textContent = 'Fichier trop volumineux.';
+          showStatus('Le fichier dépasse la limite de 8 Mo.', 'error');
+          return;
+        }
+        selectedFile = file;
+        fileName.textContent = `${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} Mo`;
+        showStatus('PDF prêt. Cliquez sur « Lancer l’analyse » pour commencer.');
+        setFlowState('ready');
+      };
+
+      input.addEventListener('change', () => selectFile(input.files[0]));
+      ['dragenter', 'dragover'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('dragover');
+      }));
+      ['dragleave', 'drop'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('dragover');
+      }));
+      dropzone.addEventListener('drop', (event) => selectFile(event.dataTransfer.files[0]));
+
+      const wait = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
+      const renderResult = (payload) => {
+        const analysis = payload.analysis || {};
+        document.getElementById('result-title').textContent = payload.filename || 'Résultat disponible';
+        document.getElementById('result-meta').textContent = `Version ${payload.version || 1} · Statut ${payload.documentStatus || 'Analysé'}`;
+        document.getElementById('result-category').textContent = formatValue(analysis.category);
+        document.getElementById('result-score').textContent = analysis.confidence === undefined || analysis.confidence === null || analysis.confidence === '' ? '—' : `${analysis.confidence}/100`;
+        document.getElementById('result-summary').textContent = formatValue(analysis.summary);
+        document.getElementById('result-points').textContent = formatValue(analysis.keyPoints);
+        document.getElementById('result-verification').textContent = formatValue(analysis.verification);
+        resultCard.hidden = false;
+      };
+
+      const pollStatus = async (filename, startedAt) => {
+        for (let attempt = 0; attempt < 75; attempt += 1) {
+          const query = new URLSearchParams({ filename, since: startedAt });
+          const response = await fetch(`/api/status?${query.toString()}`, { cache: 'no-store' });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || 'Impossible de lire le statut du traitement.');
+          if (payload.status === 'completed') {
+            renderResult(payload);
+            showStatus('Analyse terminée. Le résultat est également conservé dans Airtable.', 'success');
+            setFlowState('done');
+            return;
+          }
+          if (payload.status === 'error') throw new Error(payload.message || 'Le scénario Make a rencontré une erreur.');
+          showStatus(payload.message || 'Fichier reçu. Make traite actuellement le document.');
+          await wait(4000);
+        }
+        throw new Error('Le traitement prend plus de temps que prévu. Consultez Airtable pour vérifier son état.');
+      };
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!selectedFile) {
+          showStatus('Sélectionnez d’abord un fichier PDF.', 'error');
+          return;
+        }
+        submitButton.disabled = true;
+        submitButton.textContent = 'Envoi en cours…';
+        resultCard.hidden = true;
+        setFlowState('processing');
+        showStatus('Transmission du PDF à Make…');
+        const startedAt = new Date().toISOString();
+        const body = new FormData();
+        body.append('file', selectedFile, selectedFile.name);
+        try {
+          const response = await fetch('/api/upload', { method: 'POST', body });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || 'Le dépôt n’a pas pu être envoyé.');
+          showStatus('PDF reçu. Le scénario Make analyse maintenant le document.');
+          await pollStatus(payload.filename || selectedFile.name, startedAt);
+        } catch (error) {
+          setFlowState('error');
+          showStatus(error.message || 'Une erreur est survenue.', 'error');
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = 'Lancer l’analyse ↗';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "smartdoc-ai-portal",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SmartDoc AI portal with direct PDF upload and Make automation",
+  "dependencies": {
+    "busboy": "^1.6.0"
+  }
+}
+
