@@ -68,3 +68,5 @@ Dans Vercel :
 6. Cliquer sur `Deploy`.
 
 Après le dépôt, la page interroge `/api/status` jusqu’à ce que le statut Airtable passe à `Analysé` et qu’une ligne `Analyses IA` soit liée au bon enregistrement `Documents`. Elle affiche ensuite le résumé, la catégorie, les points importants et le score de confiance. La surveillance couvre un cycle de 15 minutes du scénario Google Drive ; si la page est fermée avant la fin, il suffit de la recharger pour consulter le résultat enregistré dans Airtable.
+
+Le formulaire permet également de choisir un envoi par email. Lorsque l’option est cochée, `sendEmail=true` et `notifyEmail` sont transmis à Make ; le scénario doit filtrer `sendEmail = true` avant le module Gmail.

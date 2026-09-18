@@ -1,9 +1,22 @@
 const DEFAULT_DOCUMENTS_TABLE = 'Documents';
 
+function normalizeFieldName(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
+}
+
 function getField(fields, names) {
+  const source = fields || {};
   for (const name of names) {
-    if (Object.prototype.hasOwnProperty.call(fields, name)) return fields[name];
+    if (Object.prototype.hasOwnProperty.call(source, name)) return source[name];
   }
+
+  const normalizedNames = names.map(normalizeFieldName);
+  const matchingKey = Object.keys(source).find((key) => normalizedNames.includes(normalizeFieldName(key)));
+  if (matchingKey) return source[matchingKey];
   return null;
 }
 
@@ -11,6 +24,10 @@ function toText(value) {
   if (Array.isArray(value)) return value.map(toText).filter(Boolean).join(' · ');
   if (value && typeof value === 'object') return value.name || value.id || '';
   return value === undefined || value === null ? '' : String(value);
+}
+
+function displayFilename(value) {
+  return toText(value).replace(/(?:\.pdf)+$/i, '.pdf');
 }
 
 async function airtableList(table, params = {}) {
@@ -31,7 +48,13 @@ async function airtableList(table, params = {}) {
 
 function sortDate(record) {
   const fields = record.fields || {};
-  const value = getField(fields, ['Dernière modification', 'Date création', 'Date reception']);
+  const value = getField(fields, [
+    'Dernière modification',
+    'Derniere modification',
+    'Date création',
+    'Date creation',
+    'Date reception',
+  ]);
   return Date.parse(value || record.createdTime || '') || 0;
 }
 
@@ -48,9 +71,7 @@ module.exports = async function handler(request, response) {
   try {
     const documentsTable = process.env.AIRTABLE_DOCUMENTS_TABLE || DEFAULT_DOCUMENTS_TABLE;
     const records = await airtableList(documentsTable, {
-      maxRecords: '20',
-      'sort[0][field]': 'Dernière modification',
-      'sort[0][direction]': 'desc',
+      maxRecords: '100',
     });
 
     const documents = records
@@ -58,8 +79,8 @@ module.exports = async function handler(request, response) {
         const fields = record.fields || {};
         return {
           id: record.id,
-          name: toText(getField(fields, ['Nom document', 'Nom fichier'])) || 'Document sans nom',
-          category: toText(getField(fields, ['Type document', 'Catégorie détectée', 'Categorie detectee'])) || '—',
+          name: displayFilename(getField(fields, ['Nom document', 'Nom fichier'])) || 'Document sans nom',
+          category: toText(getField(fields, ['Type document', 'Catégorie détectée', 'Categorie detectee', 'Categorie Detectee'])) || '—',
           version: toText(getField(fields, ['Version actuelle'])) || '1',
           status: toText(getField(fields, ['Statut', 'Statut version'])) || 'En traitement',
           updatedAt: sortDate(record),

@@ -66,6 +66,10 @@ function cleanFilename(filename) {
   return cleaned.toLowerCase().endsWith('.pdf') ? cleaned : `${cleaned}.pdf`;
 }
 
+function isValidEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
+
 async function handler(request, response) {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
@@ -79,6 +83,11 @@ async function handler(request, response) {
   try {
     const { fields, file } = await parseMultipart(request);
     const filename = cleanFilename(file.filename);
+    const sendEmail = String(fields.sendEmail || '').toLowerCase() === 'true';
+    const notifyEmail = String(fields.notifyEmail || '').trim();
+    if (sendEmail && !isValidEmail(notifyEmail)) {
+      return response.status(400).json({ error: 'Une adresse email valide est requise lorsque l’envoi par email est activé.' });
+    }
     const isPdf = file.mimeType === 'application/pdf' || filename.endsWith('.pdf');
     if (!isPdf) {
       return response.status(400).json({ error: 'Seuls les fichiers PDF sont acceptés.' });
@@ -90,6 +99,8 @@ async function handler(request, response) {
     form.append('filename', filename);
     form.append('mimeType', 'application/pdf');
     form.append('jobId', jobId);
+    form.append('sendEmail', sendEmail ? 'true' : 'false');
+    if (sendEmail) form.append('notifyEmail', notifyEmail);
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);

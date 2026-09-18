@@ -121,6 +121,14 @@
     .dropzone-copy { color: var(--muted); font-size: 13px; }
     .upload-side { display: flex; min-width: 215px; flex-direction: column; justify-content: space-between; gap: 18px; }
     .file-name { min-height: 42px; padding: 12px; border: 1px solid var(--line); color: var(--muted); font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+    .email-options { padding: 13px; border: 1px solid var(--line); background: #fbfbf8; }
+    .email-toggle { display: flex; align-items: flex-start; gap: 9px; color: var(--ink); font-size: 12px; cursor: pointer; }
+    .email-toggle input { width: 16px; height: 16px; flex: 0 0 16px; margin: 0; accent-color: var(--coral); }
+    .email-field { display: grid; gap: 6px; margin-top: 12px; }
+    .email-field[hidden] { display: none; }
+    .email-field label { color: var(--muted); font: 700 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .07em; text-transform: uppercase; }
+    .email-field input { width: 100%; min-height: 38px; padding: 9px 10px; border: 1px solid var(--line); color: var(--ink); background: var(--white); font: 12px/1.2 Arial, Helvetica, sans-serif; }
+    .email-field input:focus { border-color: var(--coral); outline: 2px solid rgba(239,92,80,.18); }
     .upload-side .button { width: 100%; }
     .status-message { margin-top: 14px; padding: 14px 16px; border-left: 3px solid var(--coral); color: var(--ink); background: #fff0ed; font-size: 13px; }
     .status-message[hidden], .result-card[hidden] { display: none; }
@@ -203,7 +211,7 @@
 
         <section class="hero-strip" aria-label="État de la solution"><div class="strip-item"><strong>Traitement</strong><span>Google Drive → IA → Airtable</span></div><div class="strip-item"><strong>Versioning</strong><span>Une fiche, plusieurs versions</span></div><div class="strip-item"><strong>Cadence</strong><span>Scénario Make actif · 15 min</span></div></section>
 
-        <section class="section" id="depot"><div class="section-heading"><div><span class="eyebrow">01 · Dépôt direct</span><h2>Lancer une analyse</h2></div><p>Le PDF est transmis à Make, traité, puis le résultat final revient dans cette page.</p></div><form class="upload-card" id="upload-form"><label class="dropzone" id="dropzone" for="file-input"><span class="dropzone-icon">↑</span><span class="dropzone-title">Déposez votre PDF ici</span><span class="dropzone-copy">ou cliquez pour sélectionner un fichier · 8 Mo maximum</span><input id="file-input" name="file" type="file" accept="application/pdf,.pdf" required></label><div class="upload-side"><div><span class="eyebrow">Fichier sélectionné</span><div class="file-name" id="file-name">Aucun fichier sélectionné</div></div><button class="button primary" id="submit-button" type="submit">Lancer l’analyse ↗</button></div></form><div class="status-message" id="status-message" role="status" aria-live="polite" hidden></div><section class="result-card" id="result-card" aria-live="polite" hidden><span class="eyebrow">Analyse terminée</span><h3 id="result-title">Résultat disponible</h3><p id="result-meta"></p><div class="result-grid"><div class="result-item"><span class="result-label">Catégorie</span><div class="result-value" id="result-category">—</div></div><div class="result-item"><span class="result-label">Score de confiance</span><div class="result-value score" id="result-score">—</div></div><div class="result-item wide"><span class="result-label">Résumé</span><div class="result-value" id="result-summary">—</div></div><div class="result-item wide"><span class="result-label">Points importants</span><div class="result-value" id="result-points">—</div></div><div class="result-item wide"><span class="result-label">Vérification</span><div class="result-value" id="result-verification">—</div></div></div></section></section>
+        <section class="section" id="depot"><div class="section-heading"><div><span class="eyebrow">01 · Dépôt direct</span><h2>Lancer une analyse</h2></div><p>Le PDF est transmis à Make, traité, puis le résultat final revient dans cette page.</p></div><form class="upload-card" id="upload-form"><label class="dropzone" id="dropzone" for="file-input"><span class="dropzone-icon">↑</span><span class="dropzone-title">Déposez votre PDF ici</span><span class="dropzone-copy">ou cliquez pour sélectionner un fichier · 8 Mo maximum</span><input id="file-input" name="file" type="file" accept="application/pdf,.pdf" required></label><div class="upload-side"><div><span class="eyebrow">Fichier sélectionné</span><div class="file-name" id="file-name">Aucun fichier sélectionné</div></div><div class="email-options"><label class="email-toggle" for="notify-email"><input id="notify-email" type="checkbox"><span>Recevoir aussi le résultat par email</span></label><div class="email-field" id="email-field" hidden><label for="email-input">Adresse email</label><input id="email-input" name="notifyEmail" type="email" autocomplete="email" placeholder="vous@exemple.com"></div></div><button class="button primary" id="submit-button" type="submit">Lancer l’analyse ↗</button></div></form><div class="status-message" id="status-message" role="status" aria-live="polite" hidden></div><section class="result-card" id="result-card" aria-live="polite" hidden><span class="eyebrow">Analyse terminée</span><h3 id="result-title">Résultat disponible</h3><p id="result-meta"></p><div class="result-grid"><div class="result-item"><span class="result-label">Catégorie</span><div class="result-value" id="result-category">—</div></div><div class="result-item"><span class="result-label">Score de confiance</span><div class="result-value score" id="result-score">—</div></div><div class="result-item wide"><span class="result-label">Résumé</span><div class="result-value" id="result-summary">—</div></div><div class="result-item wide"><span class="result-label">Points importants</span><div class="result-value" id="result-points">—</div></div><div class="result-item wide"><span class="result-label">Vérification</span><div class="result-value" id="result-verification">—</div></div></div></section></section>
 
         <section class="section" id="flux"><div class="section-heading"><div><span class="eyebrow">01 · Le parcours</span><h2>Du fichier à la décision</h2></div><p>Une chaîne courte, lisible et vérifiable de bout en bout.</p></div><div class="process"><article class="process-step"><div class="step-number">01</div><h3>Dépôt</h3><p>Le PDF arrive dans le dossier Google Drive.</p></article><article class="process-step"><div class="step-number">02</div><h3>Extraction</h3><p>Le contenu est converti et recomposé en texte.</p></article><article class="process-step"><div class="step-number">03</div><h3>Analyse IA</h3><p>Catégorie, résumé, points clés et score sont produits.</p></article><article class="process-step"><div class="step-number">04</div><h3>Traçabilité</h3><p>Document, version et analyse sont liés dans Airtable.</p></article></div></section>
 
@@ -229,6 +237,9 @@
       const panelTitle = document.getElementById('panel-title');
       const panelCopy = document.getElementById('panel-copy');
       const documentsBody = document.getElementById('documents-body');
+      const notifyEmail = document.getElementById('notify-email');
+      const emailField = document.getElementById('email-field');
+      const emailInput = document.getElementById('email-input');
       const maxFileSize = 8 * 1024 * 1024;
       let selectedFile = null;
 
@@ -316,6 +327,11 @@
       };
 
       input.addEventListener('change', () => selectFile(input.files[0]));
+      notifyEmail.addEventListener('change', () => {
+        emailField.hidden = !notifyEmail.checked;
+        emailInput.required = notifyEmail.checked;
+        if (notifyEmail.checked) emailInput.focus();
+      });
       ['dragenter', 'dragover'].forEach((eventName) => dropzone.addEventListener(eventName, (event) => {
         event.preventDefault();
         dropzone.classList.add('dragover');
@@ -341,7 +357,10 @@
       };
 
       const pollStatus = async (filename, startedAt) => {
-        for (let attempt = 0; attempt < 75; attempt += 1) {
+        // Le scénario de surveillance Google Drive peut être planifié toutes
+        // les 15 minutes. La page doit donc rester disponible assez longtemps
+        // pour couvrir un cycle complet, sans multiplier les requêtes inutiles.
+        for (let attempt = 0; attempt < 150; attempt += 1) {
           const query = new URLSearchParams({ filename, since: startedAt });
           const response = await fetch(`/api/status?${query.toString()}`, { cache: 'no-store' });
           const payload = await response.json().catch(() => ({}));
@@ -355,15 +374,27 @@
           }
           if (payload.status === 'error') throw new Error(payload.message || 'Le scénario Make a rencontré une erreur.');
           showStatus(payload.message || 'Fichier reçu. Make traite actuellement le document.');
-          await wait(4000);
+          await wait(attempt < 12 ? 4000 : 8000);
         }
-        throw new Error('Le traitement prend plus de temps que prévu. Consultez Airtable pour vérifier son état.');
+        throw new Error('Le traitement continue dans Make. Consultez Airtable ou rechargez cette page dans quelques instants.');
       };
 
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!selectedFile) {
           showStatus('Sélectionnez d’abord un fichier PDF.', 'error');
+          return;
+        }
+        if (notifyEmail.checked && !emailInput.value.trim()) {
+          emailField.hidden = false;
+          emailInput.required = true;
+          emailInput.focus();
+          showStatus('Saisissez une adresse email ou décochez l’option d’envoi.', 'error');
+          return;
+        }
+        if (notifyEmail.checked && !emailInput.checkValidity()) {
+          emailInput.focus();
+          showStatus('Vérifiez le format de l’adresse email.', 'error');
           return;
         }
         submitButton.disabled = true;
@@ -374,6 +405,8 @@
         const startedAt = new Date().toISOString();
         const body = new FormData();
         body.append('file', selectedFile, selectedFile.name);
+        body.append('sendEmail', notifyEmail.checked ? 'true' : 'false');
+        if (notifyEmail.checked) body.append('notifyEmail', emailInput.value.trim());
         try {
           const response = await fetch('/api/upload', { method: 'POST', body });
           const payload = await response.json().catch(() => ({}));

@@ -31,6 +31,11 @@ Conversion / extraction du texte
 
 Le fichier reçu par le webhook doit être mappé dans le champ fichier du module Google Drive. Les étapes d’extraction, Iterator, Text aggregator, Make AI Toolkit et Airtable peuvent rester après cette étape.
 
+Le portail transmet également :
+
+- `sendEmail` : `true` ou `false` selon le choix de l’utilisateur ;
+- `notifyEmail` : l’adresse à notifier lorsque `sendEmail` vaut `true`.
+
 ### Important — éviter `document.pdf.pdf`
 
 Dans **Google Drive → Upload a File**, le champ **New File Name** ne doit pas recevoir un nom qui contient déjà `.pdf` si le module ajoute lui-même l’extension.
@@ -95,3 +100,11 @@ Gmail → Send an Email
 ```
 
 Le mail est optionnel : l’interface affiche déjà le résultat dès que le statut Airtable est final. Une route d’erreur peut mettre `Statut = Erreur` et envoyer une alerte.
+
+Pour l’envoi facultatif, ajouter un filtre avant **Gmail → Send an Email** :
+
+```text
+sendEmail égal à true
+```
+
+Dans Gmail, mapper `notifyEmail` dans le champ **To**. Si l’utilisateur décoche l’option, la branche Gmail est ignorée.
