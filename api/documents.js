@@ -31,7 +31,13 @@ async function airtableList(table, params = {}) {
 
 function sortDate(record) {
   const fields = record.fields || {};
-  const value = getField(fields, ['Dernière modification', 'Date création', 'Date reception']);
+  const value = getField(fields, [
+    'Dernière modification',
+    'Derniere modification',
+    'Date création',
+    'Date creation',
+    'Date reception',
+  ]);
   return Date.parse(value || record.createdTime || '') || 0;
 }
 
@@ -48,9 +54,7 @@ module.exports = async function handler(request, response) {
   try {
     const documentsTable = process.env.AIRTABLE_DOCUMENTS_TABLE || DEFAULT_DOCUMENTS_TABLE;
     const records = await airtableList(documentsTable, {
-      maxRecords: '20',
-      'sort[0][field]': 'Dernière modification',
-      'sort[0][direction]': 'desc',
+      maxRecords: '100',
     });
 
     const documents = records

@@ -67,4 +67,4 @@ Dans Vercel :
 5. Ajouter les variables d’environnement ci-dessus.
 6. Cliquer sur `Deploy`.
 
-Après le dépôt, la page interroge `/api/status` jusqu’à ce que le statut Airtable passe à `Analysé`, puis affiche le résumé, la catégorie, les points importants et le score de confiance.
+Après le dépôt, la page interroge `/api/status` jusqu’à ce que le statut Airtable passe à `Analysé` et qu’une ligne `Analyses IA` soit liée au bon enregistrement `Documents`. Elle affiche ensuite le résumé, la catégorie, les points importants et le score de confiance. La surveillance couvre un cycle de 15 minutes du scénario Google Drive ; si la page est fermée avant la fin, il suffit de la recharger pour consulter le résultat enregistré dans Airtable.

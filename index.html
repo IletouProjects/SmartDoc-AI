@@ -6,7 +6,7 @@
   <meta name="description" content="SmartDoc AI transforme les documents déposés en analyses structurées et traçables.">
   <meta name="theme-color" content="#f7f7f3">
   <title>SmartDoc AI — Documents qui deviennent décisions</title>
-  <script type="text/javascript" src="https://me.kes.v2.scr.kaspersky-labs.com/7EA5E9BB-55E1-4C31-9C21-4943DDFED2E4/main.js?attr=rcFR4GVddQKdlcVaV974P8dA0d8mTJhqJ8qFf6YCAuPQFYJhluwMTEoBVoLbxYhEcZZ-lezOENxrT8ErI6zcD1sRfb0eMC2RZieUhUkIiMYGPBXRnI1ZNcI2XlfeMuSM7clIGjFAWRIRQa8jpbDUp95h7ol9FAiYmLTI7jKsSUFrR-WcnHLK9Hc-hHDayVdCFBBIbh-FaMe7I5dsjpyrlQP2O_8LYe179HMs6a9rwsARiWE3zSEJwubWfOlx-Wx3D7ryXEDyfZa6BSIu1WYcJQ" charset="UTF-8"></script><style>
+  <style>
     :root {
       --paper: #f7f7f3;
       --white: #ffffff;
@@ -341,7 +341,10 @@
       };
 
       const pollStatus = async (filename, startedAt) => {
-        for (let attempt = 0; attempt < 75; attempt += 1) {
+        // Le scénario de surveillance Google Drive peut être planifié toutes
+        // les 15 minutes. La page doit donc rester disponible assez longtemps
+        // pour couvrir un cycle complet, sans multiplier les requêtes inutiles.
+        for (let attempt = 0; attempt < 150; attempt += 1) {
           const query = new URLSearchParams({ filename, since: startedAt });
           const response = await fetch(`/api/status?${query.toString()}`, { cache: 'no-store' });
           const payload = await response.json().catch(() => ({}));
@@ -355,9 +358,9 @@
           }
           if (payload.status === 'error') throw new Error(payload.message || 'Le scénario Make a rencontré une erreur.');
           showStatus(payload.message || 'Fichier reçu. Make traite actuellement le document.');
-          await wait(4000);
+          await wait(attempt < 12 ? 4000 : 8000);
         }
-        throw new Error('Le traitement prend plus de temps que prévu. Consultez Airtable pour vérifier son état.');
+        throw new Error('Le traitement continue dans Make. Consultez Airtable ou rechargez cette page dans quelques instants.');
       };
 
       form.addEventListener('submit', async (event) => {

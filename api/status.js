@@ -15,14 +15,47 @@ function normalize(value) {
     .toLowerCase();
 }
 
+function parseDate(value) {
+  if (!value) return 0;
+  if (Array.isArray(value)) return Math.max(0, ...value.map(parseDate));
+  if (value && typeof value === 'object') {
+    return parseDate(value.start || value.date || value.value);
+  }
+
+  const text = String(value).trim();
+  const parsed = Date.parse(text);
+  if (Number.isFinite(parsed)) return parsed;
+
+  // Airtable peut renvoyer une date au format local français, par exemple
+  // « 18/9/2026 6:01pm ». Date.parse() ne l'interprète pas toujours.
+  const localMatch = text.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?)?$/i);
+  if (!localMatch) return 0;
+
+  let [, day, month, year, hours = '0', minutes = '0', seconds = '0', meridiem] = localMatch;
+  let hour = Number(hours);
+  if (meridiem) {
+    const lowerMeridiem = meridiem.toLowerCase();
+    if (lowerMeridiem === 'pm' && hour < 12) hour += 12;
+    if (lowerMeridiem === 'am' && hour === 12) hour = 0;
+  }
+  return new Date(Number(year), Number(month) - 1, Number(day), hour, Number(minutes), Number(seconds)).getTime() || 0;
+}
+
 function escapeFormulaValue(value) {
   return String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function sortDate(record) {
   const fields = record.fields || {};
-  const value = getField(fields, ['Dernière modification', 'Date analyse', 'Date création', 'Date reception']);
-  return Date.parse(value || record.createdTime || '') || 0;
+  const values = [
+    'Dernière modification',
+    'Derniere modification',
+    'Date analyse',
+    'Date création',
+    'Date creation',
+    'Date reception',
+  ].map((name) => getField(fields, [name]));
+  return Math.max(parseDate(record.createdTime), ...values.map(parseDate));
 }
 
 async function airtableList(table, params = {}) {
@@ -44,6 +77,15 @@ async function airtableList(table, params = {}) {
 function linkedRecordIds(value) {
   if (!Array.isArray(value)) return value ? [String(value)] : [];
   return value.map((item) => (typeof item === 'string' ? item : item.id)).filter(Boolean);
+}
+
+function normalizedFilename(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 }
 
 module.exports = async function handler(request, response) {
@@ -69,23 +111,34 @@ module.exports = async function handler(request, response) {
       maxRecords: '20',
     });
 
-    if (!documents.length) {
+    // Si Make/Airtable a normalisé les accents ou les espaces du nom, on
+    // essaie une correspondance normalisée avant de conclure que Make n'a
+    // encore rien créé.
+    let matchingDocuments = documents;
+    if (!matchingDocuments.length) {
+      const recentDocuments = await airtableList(documentsTable, { maxRecords: '100' });
+      const normalizedTarget = normalizedFilename(filename);
+      matchingDocuments = recentDocuments.filter((record) => {
+        const value = getField(record.fields || {}, [filenameField, 'Nom document', 'Nom fichier']);
+        return normalizedFilename(value) === normalizedTarget;
+      });
+    }
+
+    if (!matchingDocuments.length) {
       return response.status(200).json({ status: 'processing', stage: 'waiting_for_make', filename, message: 'Document reçu. En attente du traitement Make…' });
     }
 
-    const document = [...documents].sort((a, b) => sortDate(b) - sortDate(a))[0];
+    const document = [...matchingDocuments].sort((a, b) => sortDate(b) - sortDate(a))[0];
     const documentFields = document.fields || {};
     const statusField = process.env.AIRTABLE_STATUS_FIELD || 'Statut';
     const currentStatus = getField(documentFields, [statusField, 'Statut version']) || 'En traitement';
-    const lastUpdate = sortDate(document);
-    const isFresh = !since || !lastUpdate || lastUpdate >= since - 60000;
     const normalizedStatus = normalize(currentStatus);
 
     if (normalizedStatus.includes('erreur') || normalizedStatus.includes('echec')) {
       return response.status(200).json({ status: 'error', filename, message: 'Le traitement Make a signalé une erreur.', documentStatus: currentStatus });
     }
 
-    if (!isFresh || !normalizedStatus.includes('analyse')) {
+    if (!normalizedStatus.includes('analyse')) {
       return response.status(200).json({ status: 'processing', stage: 'analyzing', filename, documentStatus: currentStatus, version: getField(documentFields, ['Version actuelle']) || 1, message: `Traitement en cours · statut : ${currentStatus}` });
     }
 
@@ -94,11 +147,41 @@ module.exports = async function handler(request, response) {
       const linked = getField(record.fields || {}, ['Document lié', 'Document lie']);
       return linkedRecordIds(linked).includes(document.id);
     }).sort((a, b) => sortDate(b) - sortDate(a));
+
+    // La date « Dernière modification » peut ne pas changer lorsque Make
+    // écrit dans les tables liées. L'activité de l'analyse nouvellement
+    // créée est donc également utilisée pour reconnaître le nouveau dépôt.
+    const latestActivity = Math.max(sortDate(document), ...relatedAnalyses.map(sortDate));
+    const isFresh = !since || (latestActivity > 0 && latestActivity >= since - 60000);
+    if (!isFresh) {
+      return response.status(200).json({
+        status: 'processing',
+        stage: 'waiting_for_fresh_result',
+        filename,
+        documentStatus: currentStatus,
+        version: getField(documentFields, ['Version actuelle']) || 1,
+        message: 'Le document existe déjà. En attente du résultat de cette nouvelle version…',
+      });
+    }
+
+    if (!relatedAnalyses.length) {
+      return response.status(200).json({
+        status: 'processing',
+        stage: 'waiting_for_analysis',
+        filename,
+        documentStatus: currentStatus,
+        version: getField(documentFields, ['Version actuelle']) || 1,
+        message: 'Le document est marqué comme analysé. En attente du détail de l’analyse IA…',
+      });
+    }
+
     const analysisFields = relatedAnalyses[0]?.fields || {};
 
     return response.status(200).json({
       status: 'completed',
       filename,
+      documentId: document.id,
+      analysisId: relatedAnalyses[0].id,
       documentStatus: currentStatus,
       version: getField(documentFields, ['Version actuelle']) || getField(analysisFields, ['Version analysée', 'Version analysee']) || 1,
       analysis: {
@@ -114,4 +197,3 @@ module.exports = async function handler(request, response) {
     return response.status(502).json({ error: error.message || 'Impossible de récupérer le statut Airtable.' });
   }
 };
-
